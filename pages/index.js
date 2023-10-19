@@ -10,15 +10,16 @@ import { db } from '../Firebase'
 import { onSnapshot, collection, doc, setDoc } from 'firebase/firestore';
 import {TbMessageCirclePlus} from 'react-icons/tb'
 import {useRecoilState} from 'recoil'
-import {NewMessageState} from '@/atoms/NewMessageAtom'
+import {NewMessageModalState} from '@/atoms/NewMessageAtom'
 import AddMessageModal from '@/components/AddMessageModal'
+import NewMessage from '@/components/NewMessage'
 
 export default function Home() {
 
   const { data: session } = useSession();
   const router = useRouter();
   const [messages, setMessages] = useState([])
-  const [messageModal, setMessageModal] = useRecoilState(NewMessageState)
+  const [messageModal, setMessageModal] = useRecoilState(NewMessageModalState)
 
   useEffect(() => {
     if(session) {
@@ -57,7 +58,7 @@ export default function Home() {
         {/* Top */}
 
         <div className='w-screen flex justify-end p-4 space-x-4'>
-          <button><BiMessageRoundedAdd className='text-2xl hover:text-white hover:animate-bounce' /></button>
+          <button><BiMessageRoundedAdd className='text-2xl hover:text-white hover:animate-bounce'  onClick={() => setMessageModal(true)}/></button>
           <button onClick={() => signOut()}><FiLogOut className='text-2xl hover:text-white' /></button>
         </div>
 
@@ -80,7 +81,7 @@ export default function Home() {
           {messages?.length < 1 ? (
             <div className='flex flex-col items-center space-y-4 text-2xl mt-8'>
               <div>No messages</div>
-              <TbMessageCirclePlus className="text-4xl"/>
+              <TbMessageCirclePlus className="text-4xl" onClick={() => setMessageModal(true)}/>
             </div>
           ) : (
             <div className='flex flex-col justify-center'>
@@ -90,7 +91,9 @@ export default function Home() {
           )}
         </section>
 
-        <div><AddMessageModal/></div>
+        <AddMessageModal/>
+
+        <NewMessage/>{console.log(messages)}
 
       </main>
     )
