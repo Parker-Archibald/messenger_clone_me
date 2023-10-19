@@ -7,7 +7,7 @@ import { FiLogOut } from 'react-icons/fi'
 import { BiMessageRoundedAdd } from 'react-icons/bi'
 import { BsMessenger } from 'react-icons/bs'
 import { db } from '../Firebase'
-import { onSnapshot, collection, doc, setDoc } from 'firebase/firestore';
+import { onSnapshot, collection, doc, setDoc, query, getDoc, addDoc } from 'firebase/firestore';
 import {TbMessageCirclePlus} from 'react-icons/tb'
 import {useRecoilState} from 'recoil'
 import {NewMessageModalState} from '@/atoms/NewMessageAtom'
@@ -31,18 +31,12 @@ export default function Home() {
               name: session.user.name,
               image: session.user.image
             })
-            .then(() => {
-              onSnapshot(collection(db, 'Users', session.user.uid, 'Conversations'), snapshot => {
-                let snap = snapshot.docs;
-                setMessages(snap)
-              })
-            })
           }
           else {
-            onSnapshot(collection(db, 'Users', session.user.uid, 'Conversations'), snapshot => {
-              let snap = snapshot.docs;
-              setMessages(snap)
-            })
+            // onSnapshot(query(collection(db, 'Conversations', session.user.uid, session.user.uid)), snapShot => {
+            //   let snap = snapShot.docs;
+            //   setMessages(snap)
+            // })
           }
         })
       } catch(error) {
@@ -85,15 +79,16 @@ export default function Home() {
             </div>
           ) : (
             <div className='flex flex-col justify-center'>
-              <img src={messages[0].data().withImage} className='w-16 h-auto rounded-full'/>
-              <p>{messages[0].data().withName}</p>
+              {messages?.map(message => {
+                console.log(message.data())
+              })}
             </div>
           )}
         </section>
 
         <AddMessageModal/>
 
-        <NewMessage/>{console.log(messages)}
+        <NewMessage/>
 
       </main>
     )

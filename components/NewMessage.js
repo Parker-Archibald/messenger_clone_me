@@ -10,7 +10,7 @@ import {BsFillTelephoneFill, BsFillCameraFill, BsImage} from 'react-icons/bs'
 import {FaMicrophone, FaSmile, FaVideo} from 'react-icons/fa'
 import {IoIosInformationCircle, IoIosAddCircle} from 'react-icons/io'
 import {LuSendHorizonal} from 'react-icons/lu'
-import { onSnapshot, doc, collection, addDoc, setDoc, serverTimestamp, orderBy } from "firebase/firestore";
+import { onSnapshot, doc, collection, addDoc, setDoc, serverTimestamp, orderBy, query } from "firebase/firestore";
 import { db } from "@/Firebase";
 import {useSession} from 'next-auth/react'
 
@@ -34,16 +34,16 @@ const NewMessage = () => {
 
     useEffect(() => {
         if(isOpen) {
-            try {
-                onSnapshot(collection(db, 'Conversations', session.user.uid, toPerson.id), orderBy('date', 'desc'), snapshot => {
-                    let snap = snapshot.docs
-                    setAllMessages(snap)
-                })
-            } catch(error) {
-                console.log(error)
-            }
+            getMessages()
         }
     }, [isOpen])
+
+    const getMessages = () => {
+        onSnapshot(query(collection(db, 'Conversations', session.user.uid, toPerson.id), orderBy('timeStamp')), snapShot => {
+            const snap = snapShot.docs
+            setAllMessages(snap)
+        })
+    }
 
     const handleFocus = (e) => {
         document.getElementById('bottomSearchContainer').style.width = '100%'
@@ -65,7 +65,7 @@ const NewMessage = () => {
             from: session.user.uid,
             to: toPerson.id,
             toImage: toPerson.image,
-            date: serverTimestamp()
+            timeStamp: serverTimestamp()
         })
 
         await addDoc(collection(db, 'Conversations', toPerson.id, session.user.uid), {
@@ -73,7 +73,7 @@ const NewMessage = () => {
             from: session.user.uid,
             to: toPerson.id,
             toImage: session.user.image,
-            date: serverTimestamp()
+            timeStamp: serverTimestamp()
         })
     }
 
@@ -100,18 +100,18 @@ return (
 
         {/* All messages */}
 
-        <section className="w-full h-[82%] text-white absolute mt-16 overflow-y-scroll flex flex-col space-y-8 py-8">
+        <section className="w-full h-[82%] text-white absolute mt-16 overflow-y-scroll flex flex-col space-y-6 py-8">
             {allMessages?.map(message => (
                 <div key={message.id} className="w-screen px-4">
                     {message.data().from === session.user.uid ? (
-                        <div className="flex space-x-4 text-2xl items-center ml-24">
+                        <div className="flex space-x-4 text-2xl items-center ml-32">
                             <img src={session.user.image} className="w-10 rounded-full"/>
-                            <p>{message.data().message}</p>
+                            <p className="w-3/4 bg-blue-500 rounded-2xl py-2 px-3">{message.data().message}</p>
                         </div>
                     ) : (
                         <div className="flex space-x-4 text-2xl items-center">
                             <img src={message.data().toImage} className="w-10 rounded-full"/>
-                            <p>{message.data().message}</p>
+                            <p className="w-1/2 bg-gray-700 rounded-2xl px-3 py-2">{message.data().message}</p>
                         </div>
                     )}
                 </div>
