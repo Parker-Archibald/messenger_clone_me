@@ -78,7 +78,7 @@ export default function Home() {
 
         {/* Messages */}
 
-        <section className='py-4 h-[64%] overflow-y-scroll'>
+        <section className='py-4 h-[64%] overflow-y-scroll scrollbar-hide'>
           {messages?.length < 1 ? (
             <div className='flex flex-col items-center space-y-4 text-2xl mt-8'>
               <div>No messages</div>
@@ -87,7 +87,7 @@ export default function Home() {
           ) : (
             <div className='flex flex-col justify-center'>
               {messages?.map(message => (
-                <div key={message.id} className='flex items-center w-full space-x-4 p-4 hover:bg-gray-800' onClick={() => openChat(message)}>
+                <div key={message.id} className='flex items-center w-full space-x-4 p-4 hover:bg-gray-800 cursor-pointer' onClick={() => openChat(message)}>
                   <img src={message.data().withPerson.image} className='w-16 h-16 rounded-full'/>
                   <div className='flex flex-col text-2xl'>
                     <p>{message.data().withPerson.name}</p>

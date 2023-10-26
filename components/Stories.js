@@ -20,7 +20,7 @@ const Stories = () => {
 
 
     return (
-        <div className='flex space-x-2 overflow-x-scroll p-8 w-[85%] ml-[5%] mt-4'>
+        <div className='flex space-x-2 overflow-x-scroll p-8 w-[85%] ml-[5%] mt-4 sm:scrollbar-hide'>
             <div className='shrink-0 px-2 w-20 flex flex-col items-center justify-center'>
                 <img src={session.user.image} className='w-12 h-auto rounded-full'/>
                 <div className='w-4 h-4 rounded-full bg-gray-900 flex items-center justify-center -mt-3 ml-8'>
