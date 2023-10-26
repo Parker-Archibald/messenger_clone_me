@@ -10,7 +10,7 @@ import {BsFillTelephoneFill, BsFillCameraFill, BsImage} from 'react-icons/bs'
 import {FaMicrophone, FaSmile, FaVideo} from 'react-icons/fa'
 import {IoIosInformationCircle, IoIosAddCircle} from 'react-icons/io'
 import {LuSendHorizonal} from 'react-icons/lu'
-import { onSnapshot, doc, collection, addDoc, setDoc, serverTimestamp, orderBy, query } from "firebase/firestore";
+import { onSnapshot, doc, collection, addDoc, setDoc, serverTimestamp, orderBy, query, updateDoc } from "firebase/firestore";
 import { db } from "@/Firebase";
 import {useSession} from 'next-auth/react'
 
@@ -38,11 +38,12 @@ const NewMessage = () => {
         }
     }, [isOpen])
 
-    const getMessages = () => {
-        onSnapshot(query(collection(db, 'Conversations', session.user.uid, toPerson.id), orderBy('timeStamp')), snapShot => {
-            const snap = snapShot.docs
+    const getMessages = async () => {
+        onSnapshot(query(collection(db, 'Users', session.user.uid, 'Conversations', toPerson.id, 'Messages'), orderBy('timeStamp', 'asc')), snapShot => {
+            let snap = snapShot.docs;
             setAllMessages(snap)
         })
+        
     }
 
     const handleFocus = (e) => {
@@ -60,20 +61,39 @@ const NewMessage = () => {
     }
 
     const handleSend = async () => {
-        await addDoc(collection(db, 'Conversations', session.user.uid, toPerson.id), {
-            message: message,
-            from: session.user.uid,
-            to: toPerson.id,
-            toImage: toPerson.image,
+        
+        await setDoc(doc(db, 'Users', session.user.uid, 'Conversations', toPerson.id), {
+            withPerson: {
+                name: toPerson.name,
+                image: toPerson.image
+            },
+            latestMessage: message,
             timeStamp: serverTimestamp()
         })
+        .then(() => {
+            addDoc(collection(db, 'Users', session.user.uid, 'Conversations', toPerson.id, 'Messages'), {
+                timeStamp: serverTimestamp(),
+                message: message, 
+                from: session.user.uid,
+                to: toPerson.id
+            })
+        })
 
-        await addDoc(collection(db, 'Conversations', toPerson.id, session.user.uid), {
-            message: message,
-            from: session.user.uid,
-            to: toPerson.id,
-            toImage: session.user.image,
+        await setDoc(doc(db, 'Users', toPerson.id, 'Conversations', session.user.uid), {
+            withPerson: {
+                name: session.user.name,
+                image: session.user.image
+            },
+            latestMessage: message,
             timeStamp: serverTimestamp()
+        })
+        .then(() => {
+            addDoc(collection(db, 'Users', toPerson.id, 'Conversations', session.user.uid, 'Messages'), {
+                timeStamp: serverTimestamp(),
+                message: message, 
+                from: session.user.uid,
+                to: toPerson.id
+            })
         })
     }
 
@@ -110,7 +130,7 @@ return (
                         </div>
                     ) : (
                         <div className="flex space-x-4 text-2xl items-center">
-                            <img src={message.data().toImage} className="w-10 rounded-full"/>
+                            <img src={toPerson.image} className="w-10 rounded-full"/>
                             <p className="w-1/2 bg-gray-700 rounded-2xl px-3 py-2">{message.data().message}</p>
                         </div>
                     )}
